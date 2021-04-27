@@ -4,13 +4,47 @@ author: "Jakub Skrajny"
 date: "27 04 2021"
 output: html_document
 ---
-## Libraries
+# Libraries
 ```{r}
 library(openxlsx)
+library(tseries)
+library(forecast)
 ```
 
-## Read data (date = number of days from 1900)
+# Read data (date = number of days from 1900)
 ```{r cars}
 data <- read.xlsx("Lions_Den_data.xlsx")
-data
+timeseries <- unlist(data[2])
+```
+
+# Decomposition
+```{r}
+ts <- ts(timeseries, frequency = 12)
+decompose <- decompose(ts, "additive")
+plot(decompose)
+```
+
+# Autocorrelation and stationarity analysis
+We can see that time-series is already stationary.
+```{r}
+x <- timeseries
+#autocorrelation
+acf(x, lag.max = 12)
+#stationary test
+adf.test(x)
+```
+
+# Transform time series
+Remove seasonal trend and linear trend by using differentiation with lag=12 and decompose result.
+```{r}
+x <- diff(timeseries, lag=12, difference=2)
+plot(x, type="s")
+#autocorrelation
+acf(x, lag.max = 12)
+#stationary test
+print(adf.test(x))
+ts <- ts(x, frequency = 12)
+decompose = decompose(ts, "multiplicative")
+plot(decompose)
+```
 ```
