@@ -60,7 +60,6 @@ p <- as.data.frame(seq(length(x)+1, length(x)+12))
 colnames(p) <- "time"
 trend_prediction <- as.numeric(predict(model, newdata=p))
 concat_trend <- c(x, trend_prediction)
-plot(concat_trend, type="l")
 #seasonal
 seasonal_prediction <- as.numeric(tail(decompose$seasonal, n=12))
 concat_seasonal <- c(
@@ -69,7 +68,9 @@ concat_seasonal <- c(
 )
 # overall predicion
 overall_prediction <- trend_prediction + seasonal_prediction
-plot(c(decompose$x, overall_prediction), type="l")
-plot(overall_prediction, type="l")
+plot(c(decompose$x, overall_prediction), type="l", ylab="coal usage",
+     main="history and prediction")
+plot(overall_prediction, type="l", main="prediction for next year",
+     ylab="coal usage")
 overall_prediction
 ```
