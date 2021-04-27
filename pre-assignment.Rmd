@@ -26,7 +26,6 @@ dates <- unlist(data[1])
 ts <- ts(timeseries, frequency = 12)
 decompose <- decompose(ts, "additive")
 plot(decompose)
-decompose$trend
 ```
 
 # Outliers
@@ -48,7 +47,7 @@ acf(x, lag.max = 12)
 adf.test(x)
 ```
 
-# Linear regression
+# Prediction using decomposition and linear regression
 ```{r}
 #trend
 x <- as.numeric(decompose$trend)
