@@ -2,13 +2,16 @@
 title: "pre-assignment"
 author: "Jakub Skrajny"
 date: "27 04 2021"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 # Libraries
 ```{r}
 library(openxlsx)
 library(tseries)
 library(forecast)
+library(EnvStats)
 ```
 
 # Read data (date = number of days from 1900)
@@ -22,6 +25,18 @@ timeseries <- unlist(data[2])
 ts <- ts(timeseries, frequency = 12)
 decompose <- decompose(ts, "additive")
 plot(decompose)
+```
+
+# Outliers
+Rosner's test suggest that there is only one outlier.
+```{r}
+hist(timeseries,
+  xlab = "coal usage",
+)
+test <- rosnerTest(timeseries,
+  k = 3
+)
+test
 ```
 
 # Autocorrelation and stationarity analysis

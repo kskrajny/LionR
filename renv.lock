@@ -9,6 +9,13 @@
     ]
   },
   "Packages": {
+    "EnvStats": {
+      "Package": "EnvStats",
+      "Version": "2.4.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b329c8c4d944cec159bc0ee6429635db"
+    },
     "MASS": {
       "Package": "MASS",
       "Version": "7.3-51.5",
@@ -274,6 +281,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "aaeb5c7cae85223cc6d282f295dff295"
+    },
+    "nortest": {
+      "Package": "nortest",
+      "Version": "1.0-4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e587e7a30c737ad415590976481332e4"
     },
     "openxlsx": {
       "Package": "openxlsx",
