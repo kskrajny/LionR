@@ -1,6 +1,6 @@
 ---
 title: "pre-assignment"
-author: "Jakub Skrajny"
+author: "WoodyLIver"
 date: "27 04 2021"
 output:
   html_document: default
@@ -24,17 +24,16 @@ plot(ts)
 
 # Decomposition
 ```{r}
-decompose <- decompose(ts, "multiplicative")
+decompose <- decompose(ts, "additive")
 plot(decompose)
 ```
 
 # Outliers
-Rosner's test suggest that there is only one outlier, but on the plot we can see that entire winter 2006 is does not match. 
+Test on raw data that the winter 2006 does not match. We have tried to manipulate data(differentiation, decomposition, etc) in order to get more outliers, but there were no reasonable results.
 ```{r}
-plot(ts, type="o", ylab="coal usage")
+plot(ts, type="o")
 rosnerTest(ts, k = 3)
 ```
-
 # Autocorrelation and stationarity analysis
 We can see that time-series is already stationary and is slightly correlated with itself 12 month earlier.
 ```{r}
@@ -43,21 +42,20 @@ acf(ts, lag.max = 12)
 #stationary test
 adf.test(ts)
 ```
-
-# Prediction
-Delete outlier. Lower data from winter 2006.
+## PREDICTION
+# Delete outlier
 ```{r}
 ts_ <- ts
 plot(window(ts_, 2003, 2008), type="l", ylab="coal usage")
 ts_[137:145] = ts_[137:145] * 0.6
 lines(window(ts_, 2003, 2008), type="l", col="blue")
 ```
-Perform new decomposition.
+# Perform new decomposition.
 ```{r}
-decompose_ <- decompose(ts_, "multiplicative")
+decompose_ <- decompose(ts_, "additive")
 plot(decompose_)
 ```
-Predict trend.
+# Predict trend
 ```{r}
 tsTrend <- ts(decompose_$trend, start=c(1994, 7), frequency=12)
 fitARIMA <- arima(tsTrend, order=c(1,1,1),seasonal = list(order = c(1,0,0), period = 12),method="ML")
@@ -70,17 +68,18 @@ cTrend <- ts(
 )
 plot(cTrend, type="s", ylab="coal usage trend")
 ```
-Extract seasonal.
+# Extract seasonal
 ```{r}
 ySeasonal <- window(decompose$seasonal, start=2020, end=c(2020,12))
 ```
-Predict coal usage.
+# Predict coal usage
 ```{r}
-Y <- ts(as.numeric(yTrend) * as.numeric(ySeasonal),
+Y <- ts(as.numeric(yTrend) + as.numeric(ySeasonal),
         star=start(yTrend), frequency=12)
-TS <- ts(c(ts_, Y), start=start(ts_), frequency=12)
+TS <- ts(c(ts, Y), start=start(ts), frequency=12)
 plot(TS, type="s", ylab="coal usage",
      main="history and prediction")
 lines(Y, type="s", col="blue")
+lines(yTrend, col="red")
 Y
 ```
