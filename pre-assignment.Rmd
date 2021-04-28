@@ -82,4 +82,5 @@ TS <- ts(c(ts_, Y), start=start(ts_), frequency=12)
 plot(TS, type="s", ylab="coal usage",
      main="history and prediction")
 lines(Y, type="s", col="blue")
+Y
 ```
