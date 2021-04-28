@@ -13,6 +13,7 @@ library(tseries)
 library(forecast)
 library(EnvStats)
 library(lmtest)
+library(sigmoid)
 ```
 
 # Read data
@@ -50,36 +51,49 @@ plot(window(ts_, 2003, 2008), type="l", ylab="coal usage")
 ts_[137:145] = ts_[137:145] * 0.6
 lines(window(ts_, 2003, 2008), type="l", col="blue")
 ```
-# Perform new decomposition.
+# Create model
+Model performs decomposition into trend and seasonality, then trend is predicted by ARIMA.
+Result is a sum of trend prediction and seasonality pushed through relu.
 ```{r}
-decompose_ <- decompose(ts_, "additive")
-plot(decompose_)
+model <- function (ts) {
+  decompose_ <- decompose(ts, "additive")
+  tsTrend <- ts(decompose_$trend, start=ts, frequency=12)
+  fitARIMA <- arima(tsTrend, order=c(1,1,1),seasonal = list(order = c(1,0,0), period = 12),method="ML")
+  yTrend <- predict(fitARIMA,n.ahead = 12)$pred
+  cTrend <- ts(
+    c(tsTrend, yTrend),
+    start=start(tsTrend),
+    frequency=12
+  )
+  plot(cTrend, type="s", ylab="coal usage trend")
+  ySeasonal <- window(decompose$seasonal, start=end(ts)[1], end=end(ts))
+  Y <- ts(as.numeric(yTrend) + as.numeric(ySeasonal),
+        start=start(ySeasonal)[1]+1,
+        frequency=12)
+  Y <- relu(Y)
+  TS <- ts(c(ts, Y), start=start(ts), frequency=12)
+  plot(TS, type="l", ylab="coal usage",
+       main="history and prediction", col="black")
+  lines(Y, col="blue")
+  print(Y)
+  return(Y)
+}
 ```
-# Predict trend
+# Predict
 ```{r}
-tsTrend <- ts(decompose_$trend, start=c(1994, 7), frequency=12)
-fitARIMA <- arima(tsTrend, order=c(1,1,1),seasonal = list(order = c(1,0,0), period = 12),method="ML")
-coeftest(fitARIMA) 
-yTrend <- predict(fitARIMA,n.ahead = 12)$pred
-cTrend <- ts(
-  c(tsTrend, yTrend),
-  start=start(tsTrend),
-  frequency=12
-)
-plot(cTrend, type="s", ylab="coal usage trend")
+model(ts_)
 ```
-# Extract seasonal
+
+#Evaluate
+Both, plot and acuracy test shows that our model performs much better than naive method.
 ```{r}
-ySeasonal <- window(decompose$seasonal, start=2020, end=c(2020,12))
-```
-# Predict coal usage
-```{r}
-Y <- ts(as.numeric(yTrend) + as.numeric(ySeasonal),
-        star=start(yTrend), frequency=12)
-TS <- ts(c(ts, Y), start=start(ts), frequency=12)
-plot(TS, type="s", ylab="coal usage",
-     main="history and prediction")
-lines(Y, type="s", col="blue")
-lines(yTrend, col="red")
-Y
+arg <- window(ts_, end=c(2019,12))
+trg <- window(ts_, start=2020)
+ret <- model(arg)
+naive <- ts(rep(mean(arg), 12), start=2020, frequency=12)
+plot(trg)
+lines(ret, col="blue")
+lines(naive, col="green")
+accuracy(naive, trg)
+accuracy(ret, trg)
 ```

@@ -357,6 +357,13 @@
       "Repository": "CRAN",
       "Hash": "6f76f71042411426ec8df6c54f34e6dd"
     },
+    "sigmoid": {
+      "Package": "sigmoid",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fde5f31229330936274da1777afece50"
+    },
     "stringi": {
       "Package": "stringi",
       "Version": "1.5.3",
