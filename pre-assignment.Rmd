@@ -3,8 +3,8 @@ title: "pre-assignment"
 author: "Jakub Skrajny"
 date: "27 04 2021"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 # Libraries
 ```{r}
@@ -49,7 +49,7 @@ Delete outlier. Lower data from winter 2006.
 ```{r}
 ts_ <- ts
 plot(window(ts_, 2003, 2008), type="l", ylab="coal usage")
-ts_[137:143] = ts_[137:143] * 0.6
+ts_[137:145] = ts_[137:145] * 0.6
 lines(window(ts_, 2003, 2008), type="l", col="blue")
 ```
 Perform new decomposition.
