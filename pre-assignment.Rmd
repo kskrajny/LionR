@@ -12,64 +12,74 @@ library(openxlsx)
 library(tseries)
 library(forecast)
 library(EnvStats)
+library(lmtest)
 ```
 
-# Read data (date = number of days from 1900)
+# Read data
 ```{r cars}
 data <- read.xlsx("Lions_Den_data.xlsx")
-timeseries <- unlist(data[2])
-dates <- unlist(data[1])
+ts <- ts(unlist(data[2]), start=c(1994, 7), frequency=12)
+plot(ts)
 ```
 
 # Decomposition
 ```{r}
-ts <- ts(timeseries, frequency = 12)
-decompose <- decompose(ts, "additive")
+decompose <- decompose(ts, "multiplicative")
 plot(decompose)
 ```
 
 # Outliers
-Rosner's test suggest that there is only one outlier.
+Rosner's test suggest that there is only one outlier, but on the plot we can see that entire winter 2006 is does not match. 
 ```{r}
-hist(timeseries,
-  xlab = "coal usage",
-)
-rosnerTest(timeseries, k = 3)
+plot(ts, type="o", ylab="coal usage")
+rosnerTest(ts, k = 3)
 ```
 
 # Autocorrelation and stationarity analysis
-We can see that time-series is already stationary.
+We can see that time-series is already stationary and is slightly correlated with itself 12 month earlier.
 ```{r}
-x <- timeseries
 #autocorrelation
-acf(x, lag.max = 12)
+acf(ts, lag.max = 12)
 #stationary test
-adf.test(x)
+adf.test(ts)
 ```
 
-# Prediction using decomposition and linear regression
+# Prediction
+Delete outlier. Lower data from winter 2006.
 ```{r}
-#trend
-x <- as.numeric(decompose$trend)
-x <- x[!is.na(x)]
-time <- seq(1, length(x))
-df <- data.frame(x, time)
-model <- lm(x ~ time, data = df)
-p <- as.data.frame(seq(length(x)+1, length(x)+12))
-colnames(p) <- "time"
-trend_prediction <- as.numeric(predict(model, newdata=p))
-concat_trend <- c(x, trend_prediction)
-#seasonal
-seasonal_prediction <- as.numeric(tail(decompose$seasonal, n=12))
-concat_seasonal <- c(
-  as.numeric(decompose$seasonal),
-  seasonal_prediction
+ts_ <- ts
+plot(window(ts_, 2003, 2008), type="l", ylab="coal usage")
+ts_[137:143] = ts_[137:143] * 0.6
+lines(window(ts_, 2003, 2008), type="l", col="blue")
+```
+Perform new decomposition.
+```{r}
+decompose_ <- decompose(ts_, "multiplicative")
+plot(decompose_)
+```
+Predict trend.
+```{r}
+tsTrend <- ts(decompose_$trend, start=c(1994, 7), frequency=12)
+fitARIMA <- arima(tsTrend, order=c(1,1,1),seasonal = list(order = c(1,0,0), period = 12),method="ML")
+coeftest(fitARIMA) 
+yTrend <- predict(fitARIMA,n.ahead = 12)$pred
+cTrend <- ts(
+  c(tsTrend, yTrend),
+  start=start(tsTrend),
+  frequency=12
 )
-# overall predicion
-overall_prediction <- trend_prediction + seasonal_prediction
-plot(c(decompose$x, overall_prediction), type="l", ylab="coal usage",
+plot(cTrend, type="s", ylab="coal usage trend")
+```
+Extract seasonal.
+```{r}
+ySeasonal <- window(decompose$seasonal, start=2020, end=c(2020,12))
+```
+Predict coal usage.
+```{r}
+Y <- ts(as.numeric(yTrend) * as.numeric(ySeasonal),
+        star=start(yTrend), frequency=12)
+TS <- ts(c(ts_, Y), start=start(ts_), frequency=12)
+plot(TS, type="s", ylab="coal usage",
      main="history and prediction")
-plot(overall_prediction, type="l", main="prediction for next year",
-     ylab="coal usage")
-overall_prediction
+lines(Y, type="s", col="blue")
 ```
