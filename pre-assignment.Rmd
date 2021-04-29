@@ -51,6 +51,8 @@ plot(window(ts_, 2003, 2008), type="l", ylab="coal usage")
 ts_[137:145] = ts_[137:145] * 0.6
 lines(window(ts_, 2003, 2008), type="l", col="blue")
 ```
+\p
+
 # Create model
 Model performs decomposition into trend and seasonality, then trend is predicted by ARIMA.
 Result is a sum of trend prediction and seasonality pushed through relu.
@@ -83,6 +85,7 @@ model <- function (ts) {
 ```{r}
 model(ts_)
 ```
+\p
 
 #Evaluate
 Both, plot and acuracy test shows that our model performs much better than naive method.
@@ -97,3 +100,7 @@ lines(naive, col="green")
 accuracy(naive, trg)
 accuracy(ret, trg)
 ```
+\p
+
+#Additional Variables
+Knowing the characteristic of the series, it’s seasonality and known specific of coal consumption we can improve our model adding variables of temperature (it is known that higher temperature affects lower coal consumption, also for energy production and building heating) in our country and the share of coal in our energetic mix which can affect future coal consumption. Other variable may be coal price (coal supply might play the same role), but it will somehow correlated with energetic mix and depends on our possibility to swich power source. 
